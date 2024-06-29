@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 5
+#define PRODUCERS 2
+#define CONSUMERS 2
+
+int buffer[BUFFER_SIZE];
+int in = 0;
+int out = 0;
+
+sem_t empty;
+sem_t full;
+pthread_mutex_t mutex;
+
+void* producer(void* param) {
+    int item;
+    while (1) {
+        item = rand() % 100; // Produce an item
+
+        sem_wait(&empty); // Wait for an empty slot
+        pthread_mutex_lock(&mutex); // Lock the buffer
+
+        // Add the item to the buffer
+        buffer[in] = item;
+        printf("Producer %d: Insert Item %d at %d\n", *((int *)param), item, in);
+        in = (in + 1) % BUFFER_SIZE;
+
+        pthread_mutex_unlock(&mutex); // Unlock the buffer
+        sem_post(&full); // Increment the count of full slots
+
+        sleep(1); // Simulate time taken to produce an item
+    }
+}
+
+void* consumer(void* param) {
+    int item;
+    while (1) {
+        sem_wait(&full); // Wait for a full slot
+        pthread_mutex_lock(&mutex); // Lock the buffer
+
+        // Remove the item from the buffer
+        item = buffer[out];
+        printf("Consumer %d: Remove Item %d from %d\n", *((int *)param), item, out);
+        out = (out + 1) % BUFFER_SIZE;
+
+        pthread_mutex_unlock(&mutex); // Unlock the buffer
+        sem_post(&empty); // Increment the count of empty slots
+
+        sleep(1); // Simulate time taken to consume an item
+    }
+}
+
+int main() {
+    pthread_t pro[PRODUCERS], con[CONSUMERS];
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&empty, 0, BUFFER_SIZE);
+    sem_init(&full, 0, 0);
+
+    int producer_ids[PRODUCERS] = {1, 2};
+    int consumer_ids[CONSUMERS] = {1, 2};
+
+    // Create producer threads
+    for (int i = 0; i < PRODUCERS; i++) {
+        pthread_create(&pro[i], NULL, producer, (void *)&producer_ids[i]);
+    }
+
+    // Create consumer threads
+    for (int i = 0; i < CONSUMERS; i++) {
+        pthread_create(&con[i], NULL, consumer, (void *)&consumer_ids[i]);
+    }
+
+    // Join producer threads
+    for (int i = 0; i < PRODUCERS; i++) {
+        pthread_join(pro[i], NULL);
+    }
+
+    // Join consumer threads
+    for (int i = 0; i < CONSUMERS; i++) {
+        pthread_join(con[i], NULL);
+    }
+
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&empty);
+    sem_destroy(&full);
+
+    return 0;
+}
