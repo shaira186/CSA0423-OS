@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 10
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+sem_t empty, full, mutex;
+
+void *producer(void *param) {
+    int item;
+
+    while (1) {
+        item = rand() % 100; // Produce an item
+        sem_wait(&empty);    // Wait if buffer is full
+        sem_wait(&mutex);    // Enter critical section
+
+        buffer[in] = item;   // Add the item to the buffer
+        printf("Producer produced: %d\n", item);
+        in = (in + 1) % BUFFER_SIZE;
+
+        sem_post(&mutex);    // Leave critical section
+        sem_post(&full);     // Signal that buffer is not empty
+
+        sleep(rand() % 3);   // Simulate time taken to produce an item
+    }
+}
+
+void *consumer(void *param) {
+    int item;
+
+    while (1) {
+        sem_wait(&full);     // Wait if buffer is empty
+        sem_wait(&mutex);    // Enter critical section
+
+        item = buffer[out];  // Remove the item from the buffer
+        printf("Consumer consumed: %d\n", item);
+        out = (out + 1) % BUFFER_SIZE;
+
+        sem_post(&mutex);    // Leave critical section
+        sem_post(&empty);    // Signal that buffer is not full
+
+        sleep(rand() % 3);   // Simulate time taken to consume an item
+    }
+}
+
+int main() {
+    pthread_t tid1, tid2;
+
+    sem_init(&empty, 0, BUFFER_SIZE);  // Initialize empty semaphore
+    sem_init(&full, 0, 0);             // Initialize full semaphore
+    sem_init(&mutex, 0, 1);            // Initialize mutex semaphore
+
+    pthread_create(&tid1, NULL, producer, NULL); // Create producer thread
+    pthread_create(&tid2, NULL, consumer, NULL); // Create consumer thread
+
+    pthread_join(tid1, NULL); // Wait for producer thread to finish
+    pthread_join(tid2, NULL); // Wait for consumer thread to finish
+
+    sem_destroy(&empty); // Destroy semaphores
+    sem_destroy(&full);
+    sem_destroy(&mutex);
+
+    return 0;
+}
