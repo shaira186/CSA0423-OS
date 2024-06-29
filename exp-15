@@ -1,0 +1,159 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NAME_LEN 100
+#define FILENAME "employees.dat"
+
+typedef struct {
+    int id;
+    char name[MAX_NAME_LEN];
+    int age;
+    float salary;
+} Employee;
+
+void add_employee(FILE *file) {
+    Employee emp;
+
+    printf("Enter Employee ID: ");
+    scanf("%d", &emp.id);
+    printf("Enter Employee Name: ");
+    scanf("%s", emp.name);
+    printf("Enter Employee Age: ");
+    scanf("%d", &emp.age);
+    printf("Enter Employee Salary: ");
+    scanf("%f", &emp.salary);
+
+    fseek(file, (emp.id - 1) * sizeof(Employee), SEEK_SET);
+    fwrite(&emp, sizeof(Employee), 1, file);
+    printf("Employee record added.\n");
+}
+
+void update_employee(FILE *file) {
+    Employee emp;
+    int id;
+
+    printf("Enter Employee ID to update: ");
+    scanf("%d", &id);
+
+    fseek(file, (id - 1) * sizeof(Employee), SEEK_SET);
+    fread(&emp, sizeof(Employee), 1, file);
+
+    if (emp.id != id) {
+        printf("Employee record not found.\n");
+        return;
+    }
+
+    printf("Enter new Employee Name: ");
+    scanf("%s", emp.name);
+    printf("Enter new Employee Age: ");
+    scanf("%d", &emp.age);
+    printf("Enter new Employee Salary: ");
+    scanf("%f", &emp.salary);
+
+    fseek(file, (id - 1) * sizeof(Employee), SEEK_SET);
+    fwrite(&emp, sizeof(Employee), 1, file);
+    printf("Employee record updated.\n");
+}
+
+void delete_employee(FILE *file) {
+    Employee emp = {0};
+    int id;
+
+    printf("Enter Employee ID to delete: ");
+    scanf("%d", &id);
+
+    fseek(file, (id - 1) * sizeof(Employee), SEEK_SET);
+    fwrite(&emp, sizeof(Employee), 1, file);
+    printf("Employee record deleted.\n");
+}
+
+void view_employee(FILE *file) {
+    Employee emp;
+    int id;
+
+    printf("Enter Employee ID to view: ");
+    scanf("%d", &id);
+
+    fseek(file, (id - 1) * sizeof(Employee), SEEK_SET);
+    fread(&emp, sizeof(Employee), 1, file);
+
+    if (emp.id != id) {
+        printf("Employee record not found.\n");
+        return;
+    }
+
+    printf("Employee ID: %d\n", emp.id);
+    printf("Employee Name: %s\n", emp.name);
+    printf("Employee Age: %d\n", emp.age);
+    printf("Employee Salary: %.2f\n", emp.salary);
+}
+
+void list_employees(FILE *file) {
+    Employee emp;
+    int count = 1;
+
+    rewind(file);
+
+    printf("Listing all employees:\n");
+    while (fread(&emp, sizeof(Employee), 1, file) == 1) {
+        if (emp.id != 0) {
+            printf("Employee %d:\n", count++);
+            printf("  ID: %d\n", emp.id);
+            printf("  Name: %s\n", emp.name);
+            printf("  Age: %d\n", emp.age);
+            printf("  Salary: %.2f\n", emp.salary);
+        }
+    }
+}
+
+int main() {
+    FILE *file;
+    int choice;
+
+    file = fopen(FILENAME, "r+b");
+    if (file == NULL) {
+        file = fopen(FILENAME, "w+b");
+        if (file == NULL) {
+            printf("Error opening file.\n");
+            return 1;
+        }
+    }
+
+    while (1) {
+        printf("\nEmployee Management System\n");
+        printf("1. Add Employee\n");
+        printf("2. Update Employee\n");
+        printf("3. Delete Employee\n");
+        printf("4. View Employee\n");
+        printf("5. List All Employees\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                add_employee(file);
+                break;
+            case 2:
+                update_employee(file);
+                break;
+            case 3:
+                delete_employee(file);
+                break;
+            case 4:
+                view_employee(file);
+                break;
+            case 5:
+                list_employees(file);
+                break;
+            case 6:
+                fclose(file);
+                exit(0);
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+
+    return 0;
+}
