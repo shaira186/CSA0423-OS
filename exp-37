@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to calculate total seek time and display the order of requests
+void FCFS(int requests[], int n, int head) {
+    int seek_time = 0;
+    int current_position = head;
+
+    printf("Seek Sequence is:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d -> ", current_position);
+        seek_time += abs(requests[i] - current_position);
+        current_position = requests[i];
+    }
+    printf("%d\n", current_position);
+
+    printf("Total seek time is %d\n", seek_time);
+    printf("Average seek time is %.2f\n", (float)seek_time / n);
+}
+
+int main() {
+    int n, head;
+
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+    
+    if (n <= 0 || n > MAX_REQUESTS) {
+        printf("Invalid number of requests. Please enter a number between 1 and %d.\n", MAX_REQUESTS);
+        return 1;
+    }
+
+    int requests[MAX_REQUESTS];
+
+    printf("Enter the disk requests:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    FCFS(requests, n, head);
+
+    return 0;
+}
