@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_RECORD_SIZE 100
+#define FILE_NAME "sequential_file.txt"
+
+// Function to add a record to the file
+void addRecord(const char *record) {
+    FILE *file = fopen(FILE_NAME, "a");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(file, "%s\n", record);
+    fclose(file);
+}
+
+// Function to read all records from the file
+void readRecords() {
+    char record[MAX_RECORD_SIZE];
+    FILE *file = fopen(FILE_NAME, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    printf("Reading records from file:\n");
+    while (fgets(record, MAX_RECORD_SIZE, file) != NULL) {
+        printf("%s", record);
+    }
+    fclose(file);
+}
+
+// Function to read a specific record by its index
+void readRecordByIndex(int index) {
+    char record[MAX_RECORD_SIZE];
+    FILE *file = fopen(FILE_NAME, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    int currentRecord = 0;
+    while (fgets(record, MAX_RECORD_SIZE, file) != NULL) {
+        if (currentRecord == index) {
+            printf("Record at index %d: %s", index, record);
+            fclose(file);
+            return;
+        }
+        currentRecord++;
+    }
+    printf("Record at index %d not found.\n", index);
+    fclose(file);
+}
+
+int main() {
+    int choice;
+    char record[MAX_RECORD_SIZE];
+    int index;
+
+    while (1) {
+        printf("\nSequential File Allocation\n");
+        printf("1. Add a record\n");
+        printf("2. Read all records\n");
+        printf("3. Read a specific record by index\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // To consume newline character left by scanf
+
+        switch (choice) {
+            case 1:
+                printf("Enter the record to add: ");
+                fgets(record, MAX_RECORD_SIZE, stdin);
+                record[strcspn(record, "\n")] = 0; // Remove newline character from input
+                addRecord(record);
+                break;
+            case 2:
+                readRecords();
+                break;
+            case 3:
+                printf("Enter the index of the record to read: ");
+                scanf("%d", &index);
+                readRecordByIndex(index);
+                break;
+            case 4:
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
