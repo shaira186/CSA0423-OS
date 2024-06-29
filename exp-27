@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+
+void listFiles(const char *path) {
+    DIR *dir;
+    struct dirent *entry;
+    struct stat fileStat;
+
+    // Open directory
+    dir = opendir(path);
+    if (dir == NULL) {
+        perror("Error opening directory");
+        exit(EXIT_FAILURE);
+    }
+
+    // Read directory entries
+    printf("Listing of directory: %s\n", path);
+    while ((entry = readdir(dir)) != NULL) {
+        char filepath[1024];
+        snprintf(filepath, sizeof(filepath), "%s/%s", path, entry->d_name);
+
+        // Get file information
+        if (stat(filepath, &fileStat) < 0) {
+            perror("Error getting file status");
+            continue;
+        }
+
+        // Print file/directory details
+        printf("%s\t", entry->d_name);
+        if (S_ISDIR(fileStat.st_mode)) {
+            printf("(Directory)\n");
+        } else {
+            printf("(File, Size: %ld bytes)\n", fileStat.st_size);
+        }
+    }
+
+    // Close directory
+    closedir(dir);
+}
+
+int main(int argc, char *argv[]) {
+    const char *path;
+
+    if (argc < 2) {
+        path = "."; // Default to current directory if no argument provided
+    } else {
+        path = argv[1];
+    }
+
+    listFiles(path);
+
+    return 0;
+}
