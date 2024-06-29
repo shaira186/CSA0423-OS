@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 100 // Maximum number of blocks in the file system
+#define BLOCK_SIZE 512 // Size of each block in bytes
+#define MAX_FILE_SIZE 10 // Maximum number of blocks a file can have
+
+typedef struct {
+    int indexBlock[MAX_FILE_SIZE]; // Array to hold the block numbers of the file blocks
+    int fileSize; // Number of blocks the file occupies
+} IndexBlock;
+
+// Function to initialize the index block
+void initializeIndexBlock(IndexBlock *indexBlock) {
+    for (int i = 0; i < MAX_FILE_SIZE; i++) {
+        indexBlock->indexBlock[i] = -1; // Initialize all block pointers to -1
+    }
+    indexBlock->fileSize = 0; // Initially, the file size is 0
+}
+
+// Function to add a block to the file
+void addBlock(IndexBlock *indexBlock, int blockNumber) {
+    if (indexBlock->fileSize >= MAX_FILE_SIZE) {
+        printf("Error: File size exceeds the maximum limit.\n");
+        return;
+    }
+    indexBlock->indexBlock[indexBlock->fileSize] = blockNumber;
+    indexBlock->fileSize++;
+}
+
+// Function to read a block from the file
+void readBlock(IndexBlock *indexBlock, int blockIndex) {
+    if (blockIndex >= indexBlock->fileSize) {
+        printf("Error: Block index out of bounds.\n");
+        return;
+    }
+    int blockNumber = indexBlock->indexBlock[blockIndex];
+    printf("Reading block number %d.\n", blockNumber);
+}
+
+// Function to print the index block
+void printIndexBlock(IndexBlock *indexBlock) {
+    printf("Index Block: ");
+    for (int i = 0; i < indexBlock->fileSize; i++) {
+        printf("%d ", indexBlock->indexBlock[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    IndexBlock indexBlock;
+    initializeIndexBlock(&indexBlock);
+
+    int choice, blockNumber, blockIndex;
+
+    while (1) {
+        printf("\nIndexed File Allocation\n");
+        printf("1. Add a block to the file\n");
+        printf("2. Read a block from the file\n");
+        printf("3. Print the index block\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the block number to add: ");
+                scanf("%d", &blockNumber);
+                if (blockNumber < 0 || blockNumber >= MAX_BLOCKS) {
+                    printf("Error: Invalid block number.\n");
+                    break;
+                }
+                addBlock(&indexBlock, blockNumber);
+                break;
+            case 2:
+                printf("Enter the block index to read: ");
+                scanf("%d", &blockIndex);
+                readBlock(&indexBlock, blockIndex);
+                break;
+            case 3:
+                printIndexBlock(&indexBlock);
+                break;
+            case 4:
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
