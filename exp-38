@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to sort the requests
+void sort(int arr[], int n) {
+    int temp;
+    for (int i = 0; i < n-1; i++) {
+        for (int j = i+1; j < n; j++) {
+            if (arr[i] > arr[j]) {
+                temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+}
+
+// Function to simulate SCAN disk scheduling algorithm
+void SCAN(int requests[], int n, int head, int disk_size) {
+    int seek_time = 0;
+    int current_position = head;
+    int direction = 1; // 1 for moving towards end, -1 for moving towards start
+    int seek_sequence[MAX_REQUESTS];
+    int seek_index = 0;
+
+    // Sort the requests
+    sort(requests, n);
+
+    // Find the start point for the scan
+    int start = 0;
+    while (start < n && requests[start] < head) {
+        start++;
+    }
+
+    // Move towards the end
+    for (int i = start; i < n; i++) {
+        seek_sequence[seek_index++] = current_position;
+        seek_time += abs(requests[i] - current_position);
+        current_position = requests[i];
+    }
+
+    // Move towards the start
+    for (int i = start - 1; i >= 0; i--) {
+        seek_sequence[seek_index++] = current_position;
+        seek_time += abs(requests[i] - current_position);
+        current_position = requests[i];
+    }
+
+    // Print the seek sequence
+    printf("Seek Sequence is:\n");
+    for (int i = 0; i < seek_index; i++) {
+        printf("%d -> ", seek_sequence[i]);
+    }
+    printf("%d\n", current_position);
+
+    printf("Total seek time is %d\n", seek_time);
+    printf("Average seek time is %.2f\n", (float)seek_time / n);
+}
+
+int main() {
+    int n, head, disk_size;
+
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > MAX_REQUESTS) {
+        printf("Invalid number of requests. Please enter a number between 1 and %d.\n", MAX_REQUESTS);
+        return 1;
+    }
+
+    int requests[MAX_REQUESTS];
+
+    printf("Enter the disk requests:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter the disk size: ");
+    scanf("%d", &disk_size);
+
+    SCAN(requests, n, head, disk_size);
+
+    return 0;
+}
