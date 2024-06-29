@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+typedef struct {
+    int size;
+    int is_free;
+} MemoryBlock;
+
+MemoryBlock memory[MAX];
+int num_blocks;
+
+void initialize_memory() {
+    printf("Enter the number of memory blocks: ");
+    scanf("%d", &num_blocks);
+    printf("Enter the size of each block:\n");
+    for (int i = 0; i < num_blocks; i++) {
+        printf("Block %d: ", i + 1);
+        scanf("%d", &memory[i].size);
+        memory[i].is_free = 1;
+    }
+}
+
+void first_fit(int size) {
+    for (int i = 0; i < num_blocks; i++) {
+        if (memory[i].is_free && memory[i].size >= size) {
+            memory[i].is_free = 0;
+            printf("Allocated %d units in block %d (First Fit).\n", size, i + 1);
+            return;
+        }
+    }
+    printf("No suitable block found for %d units (First Fit).\n", size);
+}
+
+void best_fit(int size) {
+    int best_index = -1;
+    for (int i = 0; i < num_blocks; i++) {
+        if (memory[i].is_free && memory[i].size >= size) {
+            if (best_index == -1 || memory[i].size < memory[best_index].size) {
+                best_index = i;
+            }
+        }
+    }
+    if (best_index != -1) {
+        memory[best_index].is_free = 0;
+        printf("Allocated %d units in block %d (Best Fit).\n", size, best_index + 1);
+    } else {
+        printf("No suitable block found for %d units (Best Fit).\n", size);
+    }
+}
+
+void worst_fit(int size) {
+    int worst_index = -1;
+    for (int i = 0; i < num_blocks; i++) {
+        if (memory[i].is_free && memory[i].size >= size) {
+            if (worst_index == -1 || memory[i].size > memory[worst_index].size) {
+                worst_index = i;
+            }
+        }
+    }
+    if (worst_index != -1) {
+        memory[worst_index].is_free = 0;
+        printf("Allocated %d units in block %d (Worst Fit).\n", size, worst_index + 1);
+    } else {
+        printf("No suitable block found for %d units (Worst Fit).\n", size);
+    }
+}
+
+void deallocate(int block_num) {
+    if (block_num < 1 || block_num > num_blocks) {
+        printf("Invalid block number.\n");
+        return;
+    }
+    if (memory[block_num - 1].is_free) {
+        printf("Block %d is already free.\n", block_num);
+    } else {
+        memory[block_num - 1].is_free = 1;
+        printf("Deallocated block %d.\n", block_num);
+    }
+}
+
+void print_memory() {
+    printf("Memory Blocks:\n");
+    for (int i = 0; i < num_blocks; i++) {
+        printf("Block %d: Size = %d, %s\n", i + 1, memory[i].size, memory[i].is_free ? "Free" : "Allocated");
+    }
+}
+
+int main() {
+    int choice, size, block_num;
+
+    initialize_memory();
+
+    while (1) {
+        printf("\nMemory Allocation Strategies\n");
+        printf("1. First Fit\n");
+        printf("2. Best Fit\n");
+        printf("3. Worst Fit\n");
+        printf("4. Deallocate\n");
+        printf("5. Print Memory\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the size to allocate: ");
+                scanf("%d", &size);
+                first_fit(size);
+                break;
+            case 2:
+                printf("Enter the size to allocate: ");
+                scanf("%d", &size);
+                best_fit(size);
+                break;
+            case 3:
+                printf("Enter the size to allocate: ");
+                scanf("%d", &size);
+                worst_fit(size);
+                break;
+            case 4:
+                printf("Enter the block number to deallocate: ");
+                scanf("%d", &block_num);
+                deallocate(block_num);
+                break;
+            case 5:
+                print_memory();
+                break;
+            case 6:
+                exit(0);
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+
+    return 0;
+}
