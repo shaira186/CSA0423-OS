@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_FILES 100
+#define MAX_FILENAME 100
+
+typedef struct {
+    char name[MAX_FILENAME];
+} File;
+
+File directory[MAX_FILES];
+int file_count = 0;
+
+void create_file() {
+    if (file_count >= MAX_FILES) {
+        printf("Directory is full. Cannot create more files.\n");
+        return;
+    }
+
+    char filename[MAX_FILENAME];
+    printf("Enter the name of the file to create: ");
+    scanf("%s", filename);
+
+    for (int i = 0; i < file_count; i++) {
+        if (strcmp(directory[i].name, filename) == 0) {
+            printf("File already exists.\n");
+            return;
+        }
+    }
+
+    strcpy(directory[file_count].name, filename);
+    file_count++;
+    printf("File '%s' created.\n", filename);
+}
+
+void delete_file() {
+    if (file_count == 0) {
+        printf("Directory is empty. No files to delete.\n");
+        return;
+    }
+
+    char filename[MAX_FILENAME];
+    printf("Enter the name of the file to delete: ");
+    scanf("%s", filename);
+
+    for (int i = 0; i < file_count; i++) {
+        if (strcmp(directory[i].name, filename) == 0) {
+            for (int j = i; j < file_count - 1; j++) {
+                strcpy(directory[j].name, directory[j + 1].name);
+            }
+            file_count--;
+            printf("File '%s' deleted.\n", filename);
+            return;
+        }
+    }
+    printf("File not found.\n");
+}
+
+void list_files() {
+    if (file_count == 0) {
+        printf("Directory is empty.\n");
+        return;
+    }
+
+    printf("Files in the directory:\n");
+    for (int i = 0; i < file_count; i++) {
+        printf("%s\n", directory[i].name);
+    }
+}
+
+int main() {
+    int choice;
+
+    while (1) {
+        printf("\nSingle Level Directory\n");
+        printf("1. Create File\n");
+        printf("2. Delete File\n");
+        printf("3. List Files\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                create_file();
+                break;
+            case 2:
+                delete_file();
+                break;
+            case 3:
+                list_files();
+                break;
+            case 4:
+                exit(0);
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+
+    return 0;
+}
