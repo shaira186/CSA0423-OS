@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+void demonstrate_fcntl(const char *filename) {
+    int fd, flags;
+
+    // Open file with read and write permissions
+    fd = open(filename, O_RDWR | O_CREAT, 0644);
+    if (fd < 0) {
+        perror("Error opening file");
+        exit(1);
+    }
+
+    // Get and print file flags
+    flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("Error getting file flags");
+    } else {
+        printf("File flags: %d\n", flags);
+    }
+
+    // Close the file
+    close(fd);
+}
+
+void demonstrate_lseek(const char *filename) {
+    int fd;
+    off_t offset;
+
+    // Open file in read-only mode
+    fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        perror("Error opening file");
+        exit(1);
+    }
+
+    // Seek to the end of the file
+    offset = lseek(fd, 0, SEEK_END);
+    if (offset == -1) {
+        perror("Error seeking file");
+    } else {
+        printf("File size: %ld bytes\n", (long) offset);
+    }
+
+    // Close the file
+    close(fd);
+}
+
+void demonstrate_stat(const char *filename) {
+    struct stat fileStat;
+
+    // Get file status
+    if (stat(filename, &fileStat) < 0) {
+        perror("Error getting file status");
+        exit(1);
+    }
+
+    // Print file status
+    printf("File Information:\n");
+    printf("  File Size: \t\t%ld bytes\n", fileStat.st_size);
+    printf("  Number of Links: \t%ld\n", fileStat.st_nlink);
+    printf("  File inode: \t\t%ld\n", fileStat.st_ino);
+}
+
+void demonstrate_opendir_readdir(const char *dirname) {
+    DIR *dir;
+    struct dirent *entry;
+
+    // Open directory
+    dir = opendir(dirname);
+    if (dir == NULL) {
+        perror("Error opening directory");
+        exit(1);
+    }
+
+    // Read directory entries
+    printf("Directory Listing:\n");
+    while ((entry = readdir(dir)) != NULL) {
+        printf("  %s\n", entry->d_name);
+    }
+
+    // Close directory
+    closedir(dir);
+}
+
+int main() {
+    const char *filename = "example.txt";
+    const char *dirname = ".";
+
+    // Demonstrate fcntl system call
+    printf("Demonstrating fcntl:\n");
+    demonstrate_fcntl(filename);
+    printf("\n");
+
+    // Demonstrate lseek system call
+    printf("Demonstrating lseek:\n");
+    demonstrate_lseek(filename);
+    printf("\n");
+
+    // Demonstrate stat system call
+    printf("Demonstrating stat:\n");
+    demonstrate_stat(filename);
+    printf("\n");
+
+    // Demonstrate opendir and readdir system calls
+    printf("Demonstrating opendir and readdir:\n");
+    demonstrate_opendir_readdir(dirname);
+
+    return 0;
+}
