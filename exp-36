@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 100 // Maximum number of blocks in the file system
+#define BLOCK_SIZE 512 // Size of each block in bytes
+
+typedef struct Block {
+    int data;
+    int next;
+} Block;
+
+typedef struct File {
+    int start;
+    int end;
+} File;
+
+Block disk[MAX_BLOCKS];
+File file;
+
+void initializeDisk() {
+    for (int i = 0; i < MAX_BLOCKS; i++) {
+        disk[i].data = -1;
+        disk[i].next = -1;
+    }
+    file.start = -1;
+    file.end = -1;
+}
+
+// Function to add a block to the file
+void addBlock(int blockNumber, int data) {
+    if (blockNumber < 0 || blockNumber >= MAX_BLOCKS) {
+        printf("Error: Invalid block number.\n");
+        return;
+    }
+
+    disk[blockNumber].data = data;
+    disk[blockNumber].next = -1;
+
+    if (file.start == -1) {
+        file.start = blockNumber;
+        file.end = blockNumber;
+    } else {
+        disk[file.end].next = blockNumber;
+        file.end = blockNumber;
+    }
+}
+
+// Function to read all blocks of the file
+void readFile() {
+    if (file.start == -1) {
+        printf("The file is empty.\n");
+        return;
+    }
+
+    printf("Reading file blocks:\n");
+    int current = file.start;
+    while (current != -1) {
+        printf("Block %d: %d\n", current, disk[current].data);
+        current = disk[current].next;
+    }
+}
+
+int main() {
+    int choice;
+    int blockNumber, data;
+
+    initializeDisk();
+
+    while (1) {
+        printf("\nLinked File Allocation\n");
+        printf("1. Add a block to the file\n");
+        printf("2. Read the file\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the block number to add: ");
+                scanf("%d", &blockNumber);
+                printf("Enter the data to store in block %d: ", blockNumber);
+                scanf("%d", &data);
+                addBlock(blockNumber, data);
+                break;
+            case 2:
+                readFile();
+                break;
+            case 3:
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
